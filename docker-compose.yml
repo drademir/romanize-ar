@@ -1,0 +1,22 @@
+services:
+  romanize-ar:
+    build: .
+    image: ghcr.io/drademir/romanize-ar:latest
+    container_name: romanize-ar
+    restart: unless-stopped
+    ports:
+      - "8100:8100"
+    environment:
+      - CAMELTOOLS_DATA=/opt/camel_tools_data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.romanize.rule=Host(`romanize.abddemir.com.tr`)"
+      - "traefik.http.routers.romanize.entrypoints=websecure"
+      - "traefik.http.routers.romanize.tls.certresolver=letsencrypt"
+      - "traefik.http.services.romanize.loadbalancer.server.port=8100"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

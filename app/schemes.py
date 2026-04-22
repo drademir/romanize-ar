@@ -41,6 +41,39 @@ def loc_to_ijmes(s: str) -> str:
     return s
 
 
+# İSNAD (Turkish academic transcription)
+# ref: https://www.isnadsistemi.org/guide/isnad2/akademik-yazim/25-ceviri-yazi-alfabesi-transkripsiyon/
+# Converts LOC/IJMES Latin output → Turkish-orthography transcription.
+# Order matters: multi-char digraphs first (th, kh, dh, sh, gh), then singles.
+_ISNAD_DIGRAPHS: list[tuple[str, str]] = [
+    ("Th", "S̱"), ("th", "s̱"),
+    ("Kh", "Ḫ"), ("kh", "ḫ"),
+    ("Dh", "Ẕ"), ("dh", "ẕ"),
+    ("Sh", "Ş"), ("sh", "ş"),
+    ("Gh", "Ġ"), ("gh", "ġ"),
+]
+# Single-letter substitutions (case-preserving)
+_ISNAD_SINGLES: list[tuple[str, str]] = [
+    ("J", "C"), ("j", "c"),
+    ("Q", "Ḳ"), ("q", "ḳ"),
+    ("W", "V"), ("w", "v"),
+]
+
+
+def loc_to_isnad(s: str) -> str:
+    """Convert LOC/IJMES Latin to İSNAD (Turkish) transcription.
+
+    Starts from IJMES output (so word-initial hamza already dropped, final
+    alif maqṣūra already ā), then applies Turkish-specific letter swaps.
+    """
+    s = loc_to_ijmes(s)
+    for src, dst in _ISNAD_DIGRAPHS:
+        s = s.replace(src, dst)
+    for src, dst in _ISNAD_SINGLES:
+        s = s.replace(src, dst)
+    return s
+
+
 def apply_scheme(s: str, scheme: str) -> str:
     s = normalize_unicode(s)
     scheme = (scheme or "ijmes").lower()
@@ -48,4 +81,6 @@ def apply_scheme(s: str, scheme: str) -> str:
         return loc_to_ijmes(s)
     if scheme in {"ala-lc", "loc", "ala"}:
         return s
-    raise ValueError(f"Unknown scheme: {scheme!r}. Use 'ijmes' or 'ala-lc'.")
+    if scheme == "isnad":
+        return loc_to_isnad(s)
+    raise ValueError(f"Unknown scheme: {scheme!r}. Use 'ijmes', 'ala-lc', or 'isnad'.")

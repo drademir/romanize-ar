@@ -34,7 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-Scheme = Literal["ijmes", "ei3", "ala-lc", "loc"]
+Scheme = Literal["ijmes", "ei3", "ala-lc", "loc", "isnad"]
 
 
 class RomanizeRequest(BaseModel):
